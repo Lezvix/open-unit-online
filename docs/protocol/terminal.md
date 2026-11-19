@@ -60,7 +60,7 @@
 | `hk` | `hk\|id` | удалить частный заказ |
 | `fu` | `fu\|login` | найти пользователя |
 | `ho` | `ho\|id` | информация о заказе |
-| `hu` | `hu\|requestId\|…` | данные заявки (`Client.tdataHireUsers`) |
+| `hu` | `hu\|requestId\|…` | данные заявки |
 
 ## Команды сервера (S→C)
 
@@ -69,10 +69,10 @@
 | Команда | Действие клиента |
 |---|---|
 | `eg` | закрыть терминал, показать мир |
-| `et\|channel` | номер канала терминала |
+| `et\|flags` | данные канала и флаг терминала, см. [формат `et`](session.md#терминал) |
 | `ul`, `cl`, `cu`, `uu` | списки пользователей терминала — короткие записи ([записи игроков](data-structures.md#записи-игроков)) |
 | `du\|sessionId` | удалить пользователя из списков |
-| `lr\|{locationId\|questId\|name\|questName}…\|` | список локаций (`LocationsMenu.parseLocations`): строка `N. name (Квест: questName)`, выбор отправляет `sl\|questId\|locationId` |
+| `lr\|{locationId\|questId\|name\|questName}…\|` | список локаций. Клиент показывает название локации и квеста. При выборе отправляет `sl\|questId\|locationId` |
 | `de` | взносы клана |
 | `co`, `rc` | управление кланом, заявки в клан |
 | `zl`, `au`, `an`, `zf`, `zs` | зоны для атаки, обновление/удаление аукциона, ошибка, успех атаки |
@@ -87,18 +87,18 @@
 
 ### Форматы сообщений для окон терминала
 
-| Команда | Формат | Где разбирается |
+| Команда | Формат | Действие клиента или значение полей |
 |---|---|---|
-| `az` | `az\|canSpectate\|currentSide\|currentLocationId\|N\|{location}×N` | `AttackRequestsMenu.parseLocationsList`. `currentSide` пусто — не участвует |
-| `za` | `za\|<location>` | `AttackRequestsMenu.updateLocation` |
-| `zd` | `zd\|locationId` | `AttackRequestsMenu.removeLocation` |
-| `eh` | `eh\|gameMoney\|goldMoney\|ownYear\|ownMonth\|ownDay\|ownGoldMoney\|ownGameMoney\|adminCourse\|adminGameMoney\|adminGoldMoney\|<лоты>` | `ExchangeMenu.parseCreateMenu`. `ownYear` = 0 — своего лота нет; год считается от 1900, месяц с нуля |
-| `eu` | `eu\|<лоты>` | `ExchangeMenu.parseMenuItems` |
-| `ae` | `ae\|gameMoney\|ownYear\|ownMonth\|ownDay\|ownGoldMoney\|ownGameMoney` | `ExchangeMenu.parseExchangeAdded` |
-| `hy` | `hy\|type\|…` | `ClanHireMenu.parseClanHireData`, см. ниже |
-| `ph` | `ph\|N\|{joinedOrderId}×N\|curPage\|pagesCount\|M\|{id\|customerId\|customerLogin\|targetId\|targetLogin\|killCount\|killPrice}×M` | `ClanHireMenu.parsePrivateHireData`. Первый список — заказы, в которые игрок уже вступил: у них кнопка «X» (`hl`), у остальных «Принять» (`hj`). `customerId` = 0 — аноним |
-| `rr` | `rr\|available` | `RadioMenu.parseData`. 0 — РЛС недоступна (`IDS_RLS_NOT_AVAIBLE`) |
-| `rl` | `rl\|0\|timeLeftMs` или `rl\|1\|terminalChannel[\|i×2\|j×2]` | `RadioMenu.parseRadiolocation`. Цель в терминале, если `terminalChannel` > 0, иначе координаты удвоены |
+| `az` | `az\|canSpectate\|currentSide\|currentLocationId\|N\|{location}×N` | показать зоны. Пустое `currentSide` означает, что игрок не участвует |
+| `za` | `za\|<location>` | обновить зону в списке |
+| `zd` | `zd\|locationId` | удалить зону из списка |
+| `eh` | `eh\|gameMoney\|goldMoney\|ownYear\|ownMonth\|ownDay\|ownGoldMoney\|ownGameMoney\|adminCourse\|adminGameMoney\|adminGoldMoney\|<лоты>` | открыть биржу. При `ownYear = 0` у игрока нет своего лота. Год считается от 1900, месяц с нуля |
+| `eu` | `eu\|<лоты>` | обновить страницу биржи |
+| `ae` | `ae\|gameMoney\|ownYear\|ownMonth\|ownDay\|ownGoldMoney\|ownGameMoney` | обновить баланс и собственный лот после его добавления |
+| `hy` | `hy\|type\|…` | данные кланового найма, поля зависят от `type` |
+| `ph` | `ph\|N\|{joinedOrderId}×N\|curPage\|pagesCount\|M\|{id\|customerId\|customerLogin\|targetId\|targetLogin\|killCount\|killPrice}×M` | страница частного найма. Первый список содержит заказы, в которые игрок уже вступил. Для них клиент показывает кнопку «X» (`hl`), для остальных — «Принять» (`hj`). При `customerId = 0` заказчик анонимен |
+| `rr` | `rr\|available` | при `available = 0` клиент показывает, что РЛС недоступна |
+| `rl` | `rl\|0\|timeLeftMs` или `rl\|1\|terminalChannel[\|i×2\|j×2]` | при `terminalChannel > 0` цель находится в терминале. Иначе координаты передаются удвоенными |
 
 Лоты биржи: `pagesCount|curPage|N|{id|year|month|day|userId|login|goldMoney|gameMoney}×N`. На странице 0 клиент добавляет строку администрации сам.
 
@@ -111,4 +111,11 @@ id|type|
 {current|max|{userId|name|level|clanId}×current}×3      атакующие, защитники, зрители
 ```
 
-`hy` по типу: 0 — список заявок `dynamicValue|deltaCost|N|{status|userId|login|clanName|timeLeft}×N` (`status` 0 — активен, иначе ожидание); 1 — предложение `requestId|clanName|days` (`IDS_HREQUEST`); 2 — найма нет; 3 — текущий найм `clanName|timeLeft`.
+В `hy` набор полей после `type` зависит от значения этого поля.
+
+| `type` | Значение и поля |
+|---|---|
+| `0` | Список заявок `dynamicValue\|deltaCost\|N\|{status\|userId\|login\|clanName\|timeLeft}×N`. При `status = 0` заявка активна, иначе ожидает |
+| `1` | Предложение найма `requestId\|clanName\|days` |
+| `2` | Найма нет |
+| `3` | Текущий найм `clanName\|timeLeft` |

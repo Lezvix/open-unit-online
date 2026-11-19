@@ -4,8 +4,7 @@
 
 # Протокол
 
-- [Обзор и разделы протокола](./docs/protocol/overview.md)
-- [Краткое описание протокола](./API.md)
+[Обзор и разделы протокола](./docs/protocol/overview.md)
 
 # TODO
 
