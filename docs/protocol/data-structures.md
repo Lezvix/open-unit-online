@@ -15,7 +15,7 @@
 
 ## Внешность (13 полей)
 
-Запись содержит 6 видов слоёв внешности (причёска, оружие и части тела или экипировки) и 7 номеров палитр.
+`PlayerItem.doAction332`: 6 видов слоёв (причёска, оружие и части тела/экипировки) и 7 номеров палитр.
 
 ```
 view0|view1|view2|view3|view4|view5|pal0|pal1|pal2|pal3|pal4|pal5|pal6
@@ -25,9 +25,7 @@ view0|view1|view2|view3|view4|view5|pal0|pal1|pal2|pal3|pal4|pal5|pal6
 
 ## Информация о персонаже
 
-### Основные сведения
-
-Запись содержит 51 поле.
+`Character.parseInfo`, 51 поле:
 
 ```
 userId|name|level|sex|race|hp|hpMax|
@@ -41,17 +39,13 @@ weaponImg0|weaponImg1|weaponName0|weaponName1|
 rank|nextRankPoints
 ```
 
-### Полная информация
-
-В полной записи после основных сведений идут дополнительные поля.
+`Character.parseFullInfo` (`:1145`) после этого читает ещё:
 
 ```
 experience|prioritySkills|availablePerks|perks|intellect|skill0|…|skill8|battleSkillSum|pieceSkillSum
 ```
 
-### Анкета, подарки и травмы
-
-В `ci` после основных сведений идут данные анкеты, подарков и травм.
+`Character.parseTraums` (`:1190`), используется в `ci`:
 
 ```
 fullName|country|city|about|
@@ -60,9 +54,10 @@ M|{traumType|traumParam|traumTime}×M|
 pvpRating
 ```
 
-## Запись предмета
+## Запись предмета (InventoryItem)
 
-Первое поле `len` содержит общее число полей записи, включая само `len`. В списке предметов следующая запись начинается через `len` полей от начала текущей.
+Самоописываемая запись **с префиксом длины**: первое поле — общее число полей записи, включая само это поле (конструктор `InventoryItem`).
+Списки предметов разбираются так: `len = int(data[p]); item = data.slice(p, p + len); p += len`.
 
 ```
 len|itemId|inventoryId|endtime|requiredRank|name|level|image|type|price|weight|upgradeCategory|
@@ -72,7 +67,7 @@ effectsCount|upgradesCount|{upgradeId}×upgradesCount|
 {effType|probability|param|duration×10}×effectsCount
 ```
 
-`requiredRank` задаёт минимальный PvP-ранг персонажа для экипировки предмета.
+`requiredRank` — требуемый PvP-ранг (`IDS_PVP_RANK`): если он выше ранга персонажа, предмет нельзя надеть (`Inventory.check1`, `ItemInfo.create`).
 Эффекты всегда занимают последние `4 × effectsCount` полей записи, даже если поля по типу их перекрывают.
 
 Поля по типу (`type`):
@@ -88,7 +83,7 @@ effectsCount|upgradesCount|{upgradeId}×upgradesCount|
 | 14 | подарок | — |
 
 `status`: 0 — не надет, 1 — надет или в первом слоте оружия, 2 — во втором слоте.
-Смысл `params` зависит от типа предмета. У оружия параметры включают тип, минимальный и максимальный урон, точность, пробитие брони, дистанцию, скорость, тип патронов, ёмкость магазина, размер очереди и навык.
+Смысл `params` зависит от типа. Для оружия индексы заданы в `InventoryItem.WP_*`: тип оружия, урон мин./макс., точность, пробитие брони, дистанция, скорость, тип патронов, магазин, очередь, навык и т.д.
 
 Пример из `iv` (15 полей):
 
@@ -98,7 +93,7 @@ effectsCount|upgradesCount|{upgradeId}×upgradesCount|
 
 ## Записи игроков
 
-**Полная запись игрока** в мировых `ul` и `uu` содержит 38 полей.
+**Полная запись игрока** (`ul` и `uu` в мире), `Main.dataUserList`, 38 полей:
 
 ```
 sessionId|userId|login|friendly|level|model|moveState|moveStack|
@@ -107,11 +102,11 @@ clanId|clanName|clanUrl|hireClanId|hireClanName|hireClanUrl|
 <внешность, 13 полей>
 ```
 
-- `model` задаёт внешнюю модель существа. `0` — мужчина, `1` — женщина, `2` — человекоподобный NPC, `3`–`11` — разновидности мобов, `12` и `13` — «Голиафы».
+- `model` — класс модели (`PlayerItem.create`): 0 — мужчина, 1 — женщина, 2 — человекоподобный NPC, 3–11 — мобы `Npc002`…`Npc010`, 12 и 13 — «Голиафы».
 - `moveState`: 0 — стоит, 1 — идёт (используется `moveStack`), 2 — мёртв.
 - `running`: `1` — бежит.
 
-**Короткая запись пользователя** содержит 10 полей и используется в списках чата и терминала (`cl`, `cu`, `ul` и `uu` в терминале).
+**Короткая запись пользователя** (`UserList.parse`), 10 полей. Используется в списках чата и терминала (`cl`, `cu`, `ul` и `uu` в терминале):
 
 ```
 sessionId|userId|login|level|clanId|clanName|clanUrl|hireClanId|hireClanName|hireClanUrl
@@ -119,7 +114,7 @@ sessionId|userId|login|level|clanId|clanName|clanUrl|hireClanId|hireClanName|hir
 
 ## Быстрые слоты расходников
 
-В каждом из 10 слотов три поля.
+10 слотов × 3 поля (`NuclearEPanel.drawAddon`):
 
 ```
 {imageId|name|count}×10
@@ -127,4 +122,4 @@ sessionId|userId|login|level|clanId|clanName|clanUrl|hireClanId|hireClanName|hir
 
 ## Список пар «предмет — количество» (C→S)
 
-В `bb` список передаётся в формате `{inventoryId|count|}×N`.
+`Chat.getString38`: `{inventoryId|count|}×N`. Используется в `bb`.
