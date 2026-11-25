@@ -1,0 +1,3 @@
+@rem Copy to local.bat and set your SDK path.
+@rem set "FLEX_HOME=%~dp0..\tools\flexsdk460"
+@rem set "FLEX_HOME=%~dp0..\tools\apache-flex-4.16"

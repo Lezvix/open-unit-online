@@ -1,10 +1,14 @@
 # OpenUnitOnline (OuO)
 
-Реимплементация игрового сервера игры unit-online (unit-online.ru)
+Реимплементация игрового сервера игры Unit (unit-online.ru), описание протокола и клиент на ActionScript 3.
 
 # Протокол
 
 [Обзор и разделы протокола](./docs/protocol/overview.md)
+
+# Клиент
+
+[Описание и сборка клиента](client/README.md)
 
 # TODO
 

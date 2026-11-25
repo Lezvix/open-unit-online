@@ -1,0 +1,16 @@
+{
+	"config": "flex",
+	"compilerOptions": {
+		"source-path": [
+			"src"
+		],
+		"output": "bin/unit.swf",
+		"target-player": "11.1",
+		"swf-version": 14,
+		"static-link-runtime-shared-libraries": true,
+		"warnings": false
+	},
+	"files": [
+		"src/unit.as"
+	]
+}
